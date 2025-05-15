@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+  gateway:
+    build:
+      context: ./Gateway
+    ports:
+      - "8001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  product-service:
+    build:
+      context: ./ProductServices
+    ports:
+      - "8002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DbConnection=Server=postgres;Database=productServicio;Username=postgres;Password=1234;
+    depends_on:
+      - postgres
+
+  order-service:
+    build:
+      context: ./OrderServices
+    ports:
+      - "8003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DbConnection=Server=postgres;Database=orderServicio;Username=postgres;Password=1234;
+    depends_on:
+      - postgres
+
+  user-service:
+    build:
+      context: ./UserServices
+    ports:
+      - "8004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DbConnection=Server=postgres;Database=userServicio;Username=postgres;Password=1234;
+    depends_on:
+      - postgres
