@@ -50,7 +50,7 @@ namespace ProductServices.Controllers
         {
             await _productRepository.AddProductAsync(product);
             await _productRepository.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetProduct), product);
+            return CreatedAtAction(nameof(GetProducts), product);
             
         }
         [HttpDelete("name/{name}")]
