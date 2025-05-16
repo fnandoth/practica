@@ -53,6 +53,20 @@ namespace ProductServices.Controllers
             return CreatedAtAction(nameof(GetProducts), product);
             
         }
+        [HttpPut("name/{name}")]
+        public async Task<IActionResult> UpdateProduct(string name, ProductDTO product)
+        {
+            var existingProduct = await _productRepository.GetProductByNameAsync(name);
+            if (existingProduct == null)
+            {
+                return NotFound();
+            }
+
+            await _productRepository.UpdateProductAsync(name, product);
+            await _productRepository.SaveChangesAsync();
+            return NoContent();
+        }
+
         [HttpDelete("name/{name}")]
         public async Task<IActionResult> DeleteProduct(string name)
         {

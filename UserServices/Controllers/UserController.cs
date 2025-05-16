@@ -30,7 +30,11 @@ namespace UserServices.Controllers
         [HttpGet("id/{id}")]
         public async Task<ActionResult<UserResponseDTO>> GetUser(string id)
         {
-            var user = await _userRepository.GetUserByIdAsync(id);
+            if (!Guid.TryParse(id, out var guidId))
+            {
+                throw new ArgumentException($"El ID {guidId} no es un GUID válido");
+            }
+            var user = await _userRepository.GetUserByIdAsync(guidId);
             if (user == null)
             {
                 return NotFound();
@@ -82,7 +86,7 @@ namespace UserServices.Controllers
         }
 
         [HttpDelete("delete/{name}")]
-        public async Task<ActionResult> DeleteUser(string name, string password)
+        public async Task<ActionResult> DeleteUser(string name, [FromQuery] string password)
         {
             await _userRepository.DeleteUserAsync(name, password);
             await _userRepository.SaveChangesAsync();

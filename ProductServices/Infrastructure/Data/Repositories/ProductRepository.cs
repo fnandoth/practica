@@ -27,8 +27,12 @@ namespace ProductServices.Infrastructure.Data.Repositories
 
         public async Task<ProductResponseDTO> GetProductByIdAsync(string id)
         {
-            var product = await _context.Products.FindAsync(id)
-                ?? throw new KeyNotFoundException($"Producto con ID {id} no encontrado");
+            if (!Guid.TryParse(id, out var guidId))
+            {
+                throw new ArgumentException($"El ID {id} no es un GUID válido");
+            }
+            var product = await _context.Products.FindAsync(guidId)
+                ?? throw new KeyNotFoundException($"Producto con ID {guidId} no encontrado");
 
             return _mapper.Map<ProductResponseDTO>(product);
         }
@@ -65,10 +69,10 @@ namespace ProductServices.Infrastructure.Data.Repositories
             await SaveChangesAsync();
             return true;
         }
-        public async Task<bool> DeleteProductAsync(string id)
+        public async Task<bool> DeleteProductAsync(string name)
         {
-            var product = await _context.Products.FindAsync(id)
-                ?? throw new KeyNotFoundException($"Producto con ID {id} no encontrado");
+            var product = await _context.Products.FirstOrDefaultAsync(p => p.Name == name)
+                ?? throw new KeyNotFoundException($"Producto con nombre {name} no encontrado");
             _context.Products.Remove(product);
             await SaveChangesAsync();
             return true;

@@ -26,10 +26,10 @@ namespace UserServices.Infrastructure.Data.Repositories
             return _mapper.Map<IEnumerable<UserResponseDTO>>(users);
         }
 
-        public async Task<UserResponseDTO> GetUserByIdAsync(string id)
+        public async Task<UserResponseDTO> GetUserByIdAsync(Guid id)
         {
-            var user = await _context.Users.FindAsync(id) 
-                ?? throw new KeyNotFoundException($"Usuario con {id} no encontrado");
+            var user = await _context.Users.FindAsync(id)
+                ?? throw new KeyNotFoundException($"Usuario con ID {id} no encontrado");
             
             return _mapper.Map<UserResponseDTO>(user);
         }

@@ -10,7 +10,7 @@ namespace UserServices.Domain.Interfaces
     public interface IUserRepository
     {
         Task<IEnumerable<UserResponseDTO>> GetAllUsersAsync();
-        Task<UserResponseDTO> GetUserByIdAsync(string Id);
+        Task<UserResponseDTO> GetUserByIdAsync(Guid Id);
         Task<UserResponseDTO> CreateUserAsync(UserDTO user);
         Task<bool> UpdateUserAsync(string name, UserDTO user);
         Task<bool> DeleteUserAsync(string name, string password);

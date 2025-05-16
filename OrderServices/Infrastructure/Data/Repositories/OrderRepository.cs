@@ -25,12 +25,9 @@ namespace OrderServices.Infrastructure.Data.Repositories
         }
 
 
-        public async Task<OrderDTOs> GetOrderByIdAsync(Guid id)
+        public async Task<OrderDTOs> GetOrderByIdAsync(string id)
         {
-            // if (!Guid.TryParse(id, out Guid guidId))
-            //     throw new ArgumentException("El id proporcionado no es un Guid válido", nameof(id));
-
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id)
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id.ToString() == id)
                 ?? throw new KeyNotFoundException($"Orden {id} no encontrada");
             return _mapper.Map<OrderDTOs>(order);
         }
@@ -109,16 +106,16 @@ namespace OrderServices.Infrastructure.Data.Repositories
             return productList;
         }
 
-        public async Task<bool> UpdateOrderAsync(OrderDTOs order, Guid id)
+        public async Task<bool> UpdateOrderAsync(OrderDTOs order, string id)
         {
-            var orderEntity = _context.Orders.FirstOrDefault(o => o.Id == id)
+            var orderEntity = _context.Orders.FirstOrDefault(o => o.Id.ToString() == id)
                 ?? throw new KeyNotFoundException($"Orden {id} no encontrada");
             // verificar que el usuario existe
             var userExists = await _httpClient.GetAsync($"http://gateway:8080/api/user/name/{order.UserName}");
             if (!userExists.IsSuccessStatusCode)
                 throw new KeyNotFoundException($"El usuario {order.UserName} no existe");
             // se mapea la lista de productos para verificar que existen y se obtienen los ids y precios
-            var ProductsList = await UpdateProductAsync(orderEntity.Products, order.Products, id);
+            var ProductsList = await UpdateProductAsync(orderEntity.Products, order.Products, orderEntity.Id);
             orderEntity.UserName = order.UserName;
             orderEntity.Products = ProductsList;
             orderEntity.TotalPrice = ProductsList.Sum(p => p.Price * p.Quantity);
@@ -157,7 +154,7 @@ namespace OrderServices.Infrastructure.Data.Repositories
             
         }
 
-        public async Task<bool> DeleteOrderAsync(Guid id)
+        public async Task<bool> DeleteOrderAsync(string id)
         {
             var order = await GetOrderByIdAsync(id)
                 ?? throw new KeyNotFoundException($"Orden {id} no encontrada");
