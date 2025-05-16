@@ -25,11 +25,13 @@ namespace OrderServices.Infrastructure.Data.Repositories
         }
 
 
-        public async Task<OrderDTOs> GetOrderByIdAsync(string id)
+        public async Task<OrderResponseDTO> GetOrderByIdAsync(string id)
         {
             var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id.ToString() == id)
                 ?? throw new KeyNotFoundException($"Orden {id} no encontrada");
-            return _mapper.Map<OrderDTOs>(order);
+            var products = await _context.OrderProducts.Where(p => p.OrderId == order.Id).ToListAsync();
+            order.Products = products;
+            return _mapper.Map<OrderResponseDTO>(order);
         }
 
         public async Task<IEnumerable<OrderResponseDTO>> GetOrdersByUserNameAsync(string username)
@@ -156,10 +158,8 @@ namespace OrderServices.Infrastructure.Data.Repositories
 
         public async Task<bool> DeleteOrderAsync(string id)
         {
-            var order = await GetOrderByIdAsync(id)
+            var orderEntity = _context.Orders.FirstOrDefault(o => o.Id.ToString() == id)
                 ?? throw new KeyNotFoundException($"Orden {id} no encontrada");
-
-            var orderEntity = _mapper.Map<Order>(order);
             _context.Orders.Remove(orderEntity);
             await SaveChangesAsync();
             return true;

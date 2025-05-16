@@ -30,11 +30,8 @@ namespace UserServices.Controllers
         [HttpGet("id/{id}")]
         public async Task<ActionResult<UserResponseDTO>> GetUser(string id)
         {
-            if (!Guid.TryParse(id, out var guidId))
-            {
-                throw new ArgumentException($"El ID {guidId} no es un GUID válido");
-            }
-            var user = await _userRepository.GetUserByIdAsync(guidId);
+            
+            var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null)
             {
                 return NotFound();
@@ -73,14 +70,14 @@ namespace UserServices.Controllers
         }
 
         [HttpPut("update/{name}")]
-        public async Task<ActionResult<UserResponseDTO>> UpdateUser(string name, UserDTO user)
+        public async Task<ActionResult<UserResponseDTO>> UpdateUser(string name, UserDTO user, [FromQuery] string password)
         {
             var existingUser = await _userRepository.GetUserByNameAsync(name);
             if (existingUser == null)
             {
                 return NotFound();
             }
-            await _userRepository.UpdateUserAsync(name, user);
+            await _userRepository.UpdateUserAsync(name, user, password);
             await _userRepository.SaveChangesAsync();
             return NoContent();
         }

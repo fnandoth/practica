@@ -11,11 +11,8 @@ public class MappingConfig : Profile
     public MappingConfig()
     {
         CreateMap<Order, OrderDTOs>().ReverseMap();
-
         CreateMap<OrderProduct, OrderProductDTO>().ReverseMap();
-
         CreateMap<Order, OrderResponseDTO>();
-
         CreateMap<OrderProduct, ProductResponseDTO>();
     }
 }

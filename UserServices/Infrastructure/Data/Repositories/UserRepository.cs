@@ -26,8 +26,12 @@ namespace UserServices.Infrastructure.Data.Repositories
             return _mapper.Map<IEnumerable<UserResponseDTO>>(users);
         }
 
-        public async Task<UserResponseDTO> GetUserByIdAsync(Guid id)
+        public async Task<UserResponseDTO> GetUserByIdAsync(string id)
         {
+            if (!Guid.TryParse(id, out var guidId))
+            {
+                throw new ArgumentException($"El ID {guidId} no es un GUID válido");
+            }
             var user = await _context.Users.FindAsync(id)
                 ?? throw new KeyNotFoundException($"Usuario con ID {id} no encontrado");
             
@@ -52,8 +56,13 @@ namespace UserServices.Infrastructure.Data.Repositories
             await SaveChangesAsync();
             return _mapper.Map<UserResponseDTO>(newUser);
         }
-        public async Task<bool> UpdateUserAsync(string name, UserDTO user)
+        public async Task<bool> UpdateUserAsync(string name, UserDTO user, string password)
         {
+            var verify = await VerifyPasswordAsync(name, password);
+            if (!verify)
+            {
+                throw new InvalidOperationException($"Contraseña incorrecta para el usuario {name}");
+            }
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Name == name)
                 ?? throw new KeyNotFoundException($"Usuario con {name} no encontrado");
             existingUser.Email = user.Email;
@@ -66,7 +75,7 @@ namespace UserServices.Infrastructure.Data.Repositories
         
         public async Task<bool> DeleteUserAsync(string name, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Name == name && u.Password == password) 
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Name == name) 
                 ?? throw new KeyNotFoundException($"Usuario con {name} no encontrado");
             if (user.Password != password)
             {
@@ -97,10 +106,11 @@ namespace UserServices.Infrastructure.Data.Repositories
         }
         public async Task<bool> VerifyPasswordAsync(string name, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Name == name && u.Password == password);
-            if (user == null)
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Name == name)
+                ?? throw new KeyNotFoundException($"Usuario con {name} no encontrado");
+            if (user.Password != password)
             {
-                throw new KeyNotFoundException($"Usuario con {name} no encontrado");
+                throw new InvalidOperationException($"Contraseña incorrecta para el usuario {name}");
             }
             return true;
         }
